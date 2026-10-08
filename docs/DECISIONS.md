@@ -9,7 +9,7 @@
 - Sem histórico de estados: o usuário definiu recuperação pelo estado mais recente. Logs não registram cada frame nem todas as transições.
 - Estados permanecem durante indisponibilidade. A indicação de atividade é metadado separado, obtido das sincronizações, e não da existência de mudanças.
 - Retenção de logs: 7 dias por padrão, com limpeza horária e índice de data. Python mantém arquivos rotativos e fila limitada de 1000 logs; durante uma falha muito longa, logs antigos excedentes permanecem somente nos arquivos locais. Estados recentes são sempre ressincronizados.
-- Polling de 15/30 segundos, sem WebSocket ou mensageria, atende a cadência solicitada.
+- Polling configurável de 500 ms após sucesso e retry de 2 segundos após falha atende à atualização próxima do tempo real na rede local. Consultas não se sobrepõem. A confirmação da detecção é uma etapa independente desse intervalo.
 - Backend com uma instância e origem única configurável, adequado à apresentação local. Escala horizontal exige adaptação explícita.
 - Remoção automática de vagas ausentes permanece desabilitada até resposta do usuário. A opção existe e é testada em ambiente isolado.
 - Docker Compose não foi imposto: MySQL, Java e Node já estão disponíveis no ambiente. CI usa um serviço MySQL isolado e reproduzível.

@@ -77,3 +77,9 @@ Reinício no EOF observado em execução real com prévia aberta. Detecção per
 - Rede local acessível pela porta 5173; acesso a partir de outro dispositivo físico e regras de firewall não foram testados.
 - Execução permanente significa processo contínuo enquanto iniciado. Inicialização como serviço do Windows não foi configurada.
 - Pipelines ainda precisam ser executadas no GitHub após envio dos arquivos.
+
+## Atualização da cadência do frontend
+
+Após o ajuste para atualização próxima do tempo real: lint, testes (10 aprovados) e build com TypeScript passaram. Os testes verificam atualização de estado na consulta de 500 ms, preservação dos dados e retry de 2 segundos, além do cancelamento e da ausência de consultas sobrepostas.
+
+Na execução local, requisições medidas com fetch do Node à API por meio do proxy do Vite retornaram HTTP 200 em 6 a 7 ms; o monitoramento das 21 vagas permaneceu ativo. Essas medidas são amostras locais, não garantia de latência em outras máquinas ou redes.

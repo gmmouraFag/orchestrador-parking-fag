@@ -84,11 +84,11 @@ CORS aceita somente `CORS_ORIGINS`. O proxy de desenvolvimento do React oferece 
 
 ## Cadência e recuperação
 
-Python analisa 2 amostras por segundo, confirma mudanças em 3 amostras consecutivas e sincroniza o catálogo a cada 15 segundos.
-Comunicação ocorre em thread separada. Retry: 1, 2, 4, 8, 16 e 30 segundos (limite configurável).
+Python analisa 2 amostras por segundo e confirma mudanças em 3 amostras consecutivas. SYNC_SECONDS controla a sincronização do catálogo; o exemplo atual usa 0.1 segundo, respeitando a cadência da thread de comunicação de 250 ms e a chegada de novas observações.
+Comunicação ocorre em thread separada. Retry exponencial começa em 1 segundo e é limitado por RETRY_MAX_SECONDS; o exemplo atual usa limite de 3 segundos.
 Alterações pendentes são consolidadas por vaga; após falha é enviado o estado observado mais recente, sem replay obrigatório de todas as transições.
 Horários de observação são da captura real, não do instante de envio. Sem captura válida, não há renovação de atividade.
-React consulta imediatamente e agenda a próxima consulta 15 segundos após sucesso ou 30 após falha; timeout de 8 segundos e nenhuma sobreposição.
+React consulta imediatamente e agenda a próxima consulta 500 ms após sucesso ou 2 segundos após falha; timeout de 8 segundos e nenhuma sobreposição. VITE_POLL_INTERVAL_MS permite ajustar o intervalo de sucesso entre 250 e 30000 ms, com padrão de 500 ms. A confirmação de três amostras a 2 FPS no Python continua independente da consulta do frontend.
 Mantém o último snapshot também em armazenamento local do navegador, sem avisos de erro na tela. O horário da consulta bem-sucedida permanece visível.
 
 ## Limites arquiteturais
