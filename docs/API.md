@@ -1,3 +1,11 @@
+# Atualização de contratos — reservas
+
+Consulte [RESERVATIONS.md](RESERVATIONS.md) e OpenAPI local `/v3/api-docs` para
+reservas, cookies, erros e WebSocket. O snapshot agora inclui `version`,
+`summary.reserved` e `spots[].physicalStatus`; `spots[].status` inclui RESERVED
+e apresenta UNKNOWN quando a observação está antiga. As seções abaixo descrevem
+o contrato original de ingestão, que permanece compatível.
+
 # Contrato Parking FAG v1
 
 Fluxo: MP4 em loop → Python → Java → MySQL → Java → React. Somente Java acessa o MySQL.
