@@ -13,17 +13,17 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_PASSWORD: ${{ github.run_id }}_${{ github.run_attempt }}
           MYSQL_DATABASE: parking_fag_test
         ports: ["3306:3306"]
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-cmd="mysqladmin ping -h localhost"
           --health-interval=10s --health-timeout=5s --health-retries=10
     env:
       MYSQL_TEST: 'true'
       TEST_DB_NAME: parking_fag_test
       DB_USER: root
-      DB_PASSWORD: root
+      DB_PASSWORD: ${{ github.run_id }}_${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
