@@ -10,6 +10,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RestController @RequestMapping("/api/v1")
+@io.swagger.v3.oas.annotations.security.SecurityScheme(name = "mobileSession", type = io.swagger.v3.oas.annotations.enums.SecuritySchemeType.APIKEY,
+    in = io.swagger.v3.oas.annotations.enums.SecuritySchemeIn.COOKIE, paramName = "parking_session")
 public class ReservationController {
     private static final String COOKIE = "parking_session";
     private final ParkingService parking;
@@ -41,14 +43,19 @@ public class ReservationController {
         if (bucket.count() > 30) throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Aguarde para tentar novamente");
     }
     @GetMapping("/reservations/current")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Recupera a última reserva privada ou inicia sessão anônima")
     public Api.PrivateSnapshot current(HttpServletRequest request, HttpServletResponse response) {
         return parking.current(session(request, response, true));
     }
     @PostMapping("/reservations") @ResponseStatus(HttpStatus.CREATED)
+    @io.swagger.v3.oas.annotations.Operation(summary = "Reserva vaga comum por 90 segundos", security = @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "mobileSession"),
+        parameters = @io.swagger.v3.oas.annotations.Parameter(name = "X-Parking-Client", in = io.swagger.v3.oas.annotations.enums.ParameterIn.HEADER, required = true, example = "mobile"))
     public Api.PrivateSnapshot reserve(@Valid @RequestBody Api.Reserve input, HttpServletRequest request, HttpServletResponse response) {
         mutation(request); return parking.reserve(session(request, response, false), input.spotCode());
     }
     @PostMapping("/reservations/{id}/{action:confirm|reject|cancel}")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Confirma, rejeita ou cancela a reserva da sessão", security = @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "mobileSession"),
+        parameters = @io.swagger.v3.oas.annotations.Parameter(name = "X-Parking-Client", in = io.swagger.v3.oas.annotations.enums.ParameterIn.HEADER, required = true, example = "mobile"))
     public Api.PrivateSnapshot transition(@PathVariable String id, @PathVariable String action,
                                           HttpServletRequest request, HttpServletResponse response) {
         mutation(request); return parking.transition(session(request, response, false), id, action);

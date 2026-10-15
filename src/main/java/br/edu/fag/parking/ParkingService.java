@@ -205,12 +205,13 @@ public class ParkingService {
         var state = lock();
         if (expire()) changed(state);
         var rows = reservations.findByTokenHashOrderByCreatedAtDesc(hash(token));
-        return new Api.PrivateSnapshot(rows.isEmpty() ? null : view(rows.get(0)), now());
+        var latest = rows.stream().filter(Reservation::live).findFirst().orElse(rows.isEmpty() ? null : rows.get(0));
+        return new Api.PrivateSnapshot(latest == null ? null : view(latest), now());
     }
     @Transactional
     public Api.PrivateSnapshot reserve(String token, String code) {
         var state = lock();
-        boolean expired = expire();
+        expire();
         var hash = hash(token);
         var own = reservations.findByTokenHashOrderByCreatedAtDesc(hash).stream().filter(Reservation::live).findFirst();
         if (own.isPresent()) {
@@ -235,7 +236,7 @@ public class ParkingService {
     @Transactional
     public Api.PrivateSnapshot transition(String token, String id, String action) {
         var state = lock();
-        boolean expired = expire();
+        expire();
         var r = reservations.findById(id).filter(v -> v.tokenHash.equals(hash(token)))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reserva inexistente"));
         var target = switch (action) {

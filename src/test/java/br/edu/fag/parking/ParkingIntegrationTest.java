@@ -74,6 +74,19 @@ class ParkingIntegrationTest {
         logService.cleanup();
         assertThat(logs.count()).isEqualTo(1);
     }
+    @Test void concurrentLogRetriesPersistOneInstantWithBrasiliaOffset() throws Exception {
+        var instant = java.time.OffsetDateTime.parse("2026-10-07T12:00:00.123456-03:00").toInstant();
+        var request = new Api.Logs(List.of(new Api.Log("python","WARN","Retry concorrente",instant)));
+        var executor = java.util.concurrent.Executors.newFixedThreadPool(2);
+        var start = new java.util.concurrent.CountDownLatch(1);
+        try {
+            var one = executor.submit(() -> { start.await(); return logService.receive(request).applied(); });
+            var two = executor.submit(() -> { start.await(); return logService.receive(request).applied(); });
+            start.countDown();
+            assertThat(one.get(10,java.util.concurrent.TimeUnit.SECONDS) + two.get(10,java.util.concurrent.TimeUnit.SECONDS)).isEqualTo(1);
+            assertThat(logs.findAll().get(0).createdAt).isEqualTo(Instant.parse("2026-10-07T15:00:00.123456Z"));
+        } finally { executor.shutdownNow(); }
+    }
     @Test void rejectsInvalidCatalogAndUnknownSpotEventsAtomically() {
         var first = Instant.now().minusSeconds(5);
         service.sync(sync(first, Status.FREE));

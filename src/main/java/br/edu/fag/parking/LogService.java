@@ -14,11 +14,15 @@ public class LogService {
     private static final Logger logger = LoggerFactory.getLogger(LogService.class);
     private final LogRepository logs;
     private final long retention;
-    public LogService(LogRepository logs, @Value("${parking.log-retention-days}") long retention) {
+    private final StateRepository states;
+    public LogService(LogRepository logs, StateRepository states, @Value("${parking.log-retention-days}") long retention) {
         this.logs = logs; this.retention = Math.max(1, retention);
+        this.states = states;
     }
     @Transactional
     public Api.Applied receive(Api.Logs request) {
+        // Serialize retries through transaction completion, including across JVM instances.
+        states.lock(1L);
         int applied = 0;
         for (var log : request.logs()) {
             var created = log.createdAt().truncatedTo(ChronoUnit.MICROS);
