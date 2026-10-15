@@ -75,7 +75,8 @@ class ReservationTest {
         assertThatThrownBy(() -> parking.transition("one",r.id(),"confirm")).hasMessageContaining("409");
     }
     @Test void disallowsSpecialUnknownStaleAndMultipleSessionReservations() {
-        assertThatThrownBy(() -> parking.reserve("one","PCD")).hasMessageContaining("409");
+        assertThatThrownBy(() -> parking.reserve("one","PCD")).hasMessageContaining("409")
+            .hasMessageContaining("Não é possível reservar vagas destinadas a pessoas com deficiência (PCD).");
         parking.reserve("one","A");
         assertThatThrownBy(() -> parking.reserve("one","B")).hasMessageContaining("409");
         clock.time = clock.time.plusSeconds(46);

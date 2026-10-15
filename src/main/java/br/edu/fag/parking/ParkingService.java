@@ -219,6 +219,7 @@ public class ParkingService {
             throw conflict("Você já possui uma reserva ativa");
         }
         var spot = spots.findBySpotCode(code).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaga inexistente"));
+        if (spot.accessible) throw conflict("Não é possível reservar vagas destinadas a pessoas com deficiência (PCD).");
         if (!available(spot)) throw conflict("Vaga indisponível para reserva");
         var r = new Reservation();
         r.id = UUID.randomUUID().toString(); r.spotId = spot.id; r.spotCode = spot.spotCode;
