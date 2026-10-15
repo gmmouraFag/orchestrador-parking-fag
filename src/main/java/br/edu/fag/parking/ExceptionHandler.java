@@ -13,6 +13,10 @@ public class ExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
     private final LogService logs;
     public ExceptionHandler(LogService logs) { this.logs = logs; }
+    @org.springframework.web.bind.annotation.ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<Api.Error> business(org.springframework.web.server.ResponseStatusException exception) {
+        return ResponseEntity.status(exception.getStatusCode()).body(new Api.Error("REQUEST_REJECTED", exception.getReason(), Instant.now()));
+    }
     @org.springframework.web.bind.annotation.ExceptionHandler({IllegalArgumentException.class, MethodArgumentNotValidException.class, HttpMessageNotReadableException.class})
     public ResponseEntity<Api.Error> badRequest(Exception exception) {
         return ResponseEntity.badRequest().body(new Api.Error("INVALID_REQUEST", "Verifique os campos, a origem e as datas da requisição", Instant.now()));

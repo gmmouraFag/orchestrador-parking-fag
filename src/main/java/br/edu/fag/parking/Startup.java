@@ -7,7 +7,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class Startup {
     private final LogService logs;
-    public Startup(LogService logs) { this.logs = logs; }
+    private final ParkingService parking;
+    public Startup(LogService logs, ParkingService parking) { this.logs = logs; this.parking = parking; }
     @EventListener(ApplicationReadyEvent.class)
-    public void ready() { logs.internal("INFO", "Orquestrador iniciado"); }
+    public void ready() { parking.initialize(); logs.internal("INFO", "Orquestrador iniciado"); }
 }

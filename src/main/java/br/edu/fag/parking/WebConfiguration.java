@@ -16,7 +16,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                             @Value("${parking.api-key}") String apiKey) { this.origins = origins; this.apiKey = apiKey; }
     @Override public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**").allowedOrigins(origins.split(",")).allowedMethods("GET", "POST", "OPTIONS")
-                .allowedHeaders("Content-Type", "X-API-Key");
+                .allowedHeaders("Content-Type", "X-API-Key", "X-Parking-Client").allowCredentials(true);
     }
     @Override public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new HandlerInterceptor() {
@@ -31,6 +31,6 @@ public class WebConfiguration implements WebMvcConfigurer {
                 }
                 return true;
             }
-        }).addPathPatterns("/api/v1/**");
+        }).addPathPatterns("/api/v1/parking-spots/sync", "/api/v1/parking-spots/events", "/api/v1/logs");
     }
 }

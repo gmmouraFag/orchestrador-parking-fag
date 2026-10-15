@@ -21,8 +21,9 @@ class ParkingIntegrationTest {
     @Autowired LogRepository logs;
     @Autowired LogService logService;
     @Autowired MockMvc mvc;
+    @Autowired ReservationRepository reservations;
     final List<Api.Point> polygon = List.of(new Api.Point(.1,.1), new Api.Point(.2,.1), new Api.Point(.2,.2));
-    @BeforeEach void clear() { spots.deleteAll(); logs.deleteAll(); }
+    @BeforeEach void clear() { reservations.deleteAll(); spots.deleteAll(); logs.deleteAll(); }
     Api.Sync sync(Instant time, Status status) {
         return new Api.Sync("parking-video", time, List.of(new Api.SpotInput("A-01", status, "A", true, 0, polygon)));
     }
@@ -34,7 +35,7 @@ class ParkingIntegrationTest {
         service.events(new Api.Events("parking-video", List.of(new Api.Event("A-01", Status.OCCUPIED, later))));
         service.events(new Api.Events("parking-video", List.of(new Api.Event("A-01", Status.FREE, first))));
         var spot = service.snapshot().spots().get(0);
-        assertThat(spot.status()).isEqualTo(Status.OCCUPIED);
+        assertThat(spot.status()).isEqualTo("OCCUPIED");
         assertThat(spot.lastUpdated()).isEqualTo(later);
         service.sync(sync(later.plusSeconds(5), Status.OCCUPIED));
         assertThat(service.snapshot().spots().get(0).lastUpdated()).isEqualTo(later);
@@ -43,7 +44,7 @@ class ParkingIntegrationTest {
     @Test void staleMonitoringRetainsStateAndUnknownHasNoOccupancy() {
         service.sync(sync(Instant.now().minusSeconds(100), Status.FREE));
         assertThat(service.snapshot().monitoringActive()).isFalse();
-        assertThat(service.snapshot().spots().get(0).status()).isEqualTo(Status.FREE);
+        assertThat(service.snapshot().spots().get(0).physicalStatus()).isEqualTo(Status.FREE);
         service.sync(sync(Instant.now(), Status.UNKNOWN));
         assertThat(service.snapshot().summary().occupancyPercent()).isNull();
         assertThat(service.snapshot().summary().unknown()).isEqualTo(1);
@@ -79,7 +80,7 @@ class ParkingIntegrationTest {
         var mixed = new Api.Events("parking-video", List.of(new Api.Event("A-01", Status.OCCUPIED, first.plusSeconds(1)),
                 new Api.Event("NO-SUCH-SPOT", Status.OCCUPIED, first.plusSeconds(1))));
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.events(mixed)).isInstanceOf(IllegalArgumentException.class);
-        assertThat(service.snapshot().spots().get(0).status()).isEqualTo(Status.FREE);
+        assertThat(service.snapshot().spots().get(0).status()).isEqualTo("FREE");
         var duplicate = new Api.Sync("parking-video", Instant.now(), List.of(sync(first, Status.FREE).spots().get(0), sync(first, Status.FREE).spots().get(0)));
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.sync(duplicate)).isInstanceOf(IllegalArgumentException.class);
         var future = sync(Instant.now().plusSeconds(60), Status.OCCUPIED);

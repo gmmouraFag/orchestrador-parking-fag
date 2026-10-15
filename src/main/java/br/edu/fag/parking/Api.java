@@ -24,10 +24,14 @@ public final class Api {
                       @NotBlank @Size(max = 2000) String message, @NotNull Instant createdAt) {}
     public record Logs(@NotEmpty @Size(max = 100) List<@Valid Log> logs) {}
     public record Applied(int applied, int ignored) {}
-    public record SpotView(String spotCode, Status status, Instant lastUpdated, Instant lastObserved,
+    public record SpotView(String spotCode, String status, Status physicalStatus, Instant lastUpdated, Instant lastObserved,
                            String sector, boolean accessible, int layoutOrder, List<Point> polygon) {}
-    public record Summary(int total, long free, long occupied, long unknown, Double occupancyPercent) {}
+    public record Summary(int total, long free, long occupied, long reserved, long unknown, Double occupancyPercent) {}
     public record Snapshot(List<SpotView> spots, Summary summary, Instant serverTime,
-                           Instant lastObserved, boolean monitoringActive) {}
+                           Instant lastObserved, boolean monitoringActive, long version) {}
+    public record Reserve(@NotBlank @Pattern(regexp = "[A-Za-z0-9_-]{1,64}") String spotCode) {}
+    public record ReservationView(String id, String spotCode, Reservation.State status, Instant createdAt,
+                                  Instant expiresAt, Instant confirmedAt) {}
+    public record PrivateSnapshot(ReservationView reservation, Instant serverTime) {}
     public record Error(String code, String message, Instant timestamp) {}
 }
